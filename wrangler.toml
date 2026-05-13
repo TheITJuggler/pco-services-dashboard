@@ -1,0 +1,44 @@
+name = "pco-services-dashboard"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# PCO credentials — ideally migrate to wrangler secrets in production:
+#   npx wrangler secret put PCO_APP_ID
+#   npx wrangler secret put PCO_SECRET
+[vars]
+PCO_APP_ID = ""
+PCO_SECRET = ""
+
+[assets]
+directory = "src/public"
+
+# R2 — stores cached team data payloads as JSON
+# Create with: npx wrangler r2 bucket create pco-cache
+[[r2_buckets]]
+binding = "PCO_CACHE"
+bucket_name = "pco-services-dashboard-cache"
+
+# Durable Object — one instance per team slug, coordinates cache + refresh
+[[durable_objects.bindings]]
+name = "PCO_DATA_CACHE"
+class_name = "PCODataCache"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["PCODataCache"]
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
